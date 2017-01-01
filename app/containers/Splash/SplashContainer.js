@@ -15,7 +15,11 @@ class SplashContainer extends Component {
       console.log('Cancelled')
     } else {
       console.log('Auth success')
-      this.props.dispatch(handleAuthWithFirebase())
+      try {
+        this.props.dispatch(handleAuthWithFirebase())
+      } catch (e) {
+        console.log('Error in handleLoginFinished', e);
+      }
     }
   }
 

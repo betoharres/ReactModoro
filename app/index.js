@@ -4,11 +4,22 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import { Provider } from 'react-redux'
 import thunk from 'redux-thunk'
 import devTools from 'remote-redux-devtools'
+import { LOGGING_OUT } from '~/redux/modules/authentication'
 
 import * as reducers from './redux'
 
+const appReducer = combineReducers(reducers)
+
+function rootReducer (state, action) {
+  if (action.type === LOGGING_OUT) {
+    state = undefined
+  }
+
+  return appReducer(state, action)
+}
+
 const store = createStore(
-  combineReducers(reducers),
+  rootReducer,
   compose(
     applyMiddleware(thunk),
     devTools()

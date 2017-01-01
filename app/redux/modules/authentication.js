@@ -1,8 +1,14 @@
-import { getAccessToken, authWithToken, updateUser } from '~/api/auth'
+import { getAccessToken, authWithToken,
+         updateUser, logout } from '~/api/auth'
+
+import { fetchSettings } from '~/api/settings'
+import { addSettingsTimerDuration,
+         addSettingsRestDuration } from '~/redux/modules/settings'
 
 const AUTHENTICATING = 'AUTHENTICATING'
 const NOT_AUTHED = 'NOT_AUTHED'
 const IS_AUTHED = 'IS_AUTHED'
+export const LOGGING_OUT = 'LOGGING_OUT'
 
 function authenticating () {
   return {
@@ -23,6 +29,12 @@ function isAuthed (uid) {
   }
 }
 
+function loggingOut () {
+  return {
+    type: LOGGING_OUT
+  }
+}
+
 export function handleAuthWithFirebase () {
   return async function (dispatch, getState) {
     dispatch(authenticating())
@@ -37,17 +49,33 @@ export function handleAuthWithFirebase () {
 
 export function onAuthChange (user) {
   return async function (dispatch) {
-    if (!user) {
-      dispatch(notAuthed())
-    } else {
-      const { uid, displayName, photoURL } = user
-      await updateUser({
-        uid,
-        displayName,
-        photoURL,
-      })
-      dispatch(isAuthed(uid))
+    try {
+      if (!user) {
+        dispatch(notAuthed())
+      } else {
+        const { uid, displayName, photoURL } = user
+        await updateUser({
+          uid,
+          displayName,
+          photoURL,
+        })
+        const settings = await fetchSettings(uid)
+        await Promise.all([
+          dispatch(addSettingsTimerDuration(settings.timerDuration)),
+          dispatch(addSettingsRestDuration(settings.restDuration))
+        ])
+        dispatch(isAuthed(uid))
+      }
+    } catch (e) {
+      console.log('Error in onAuthChange', e);
     }
+  }
+}
+
+export function handleUnauth () {
+  return function (dispatch) {
+    logout()
+    dispatch(loggingOut())
   }
 }
 
