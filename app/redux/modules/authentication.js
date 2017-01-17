@@ -5,6 +5,8 @@ import { fetchSettings } from '~/api/settings'
 import { addSettingsTimerDuration,
          addSettingsRestDuration } from '~/redux/modules/settings'
 
+import { fetchAndHandleScore } from '~/redux/modules/scores'
+
 const AUTHENTICATING = 'AUTHENTICATING'
 const NOT_AUTHED = 'NOT_AUTHED'
 const IS_AUTHED = 'IS_AUTHED'
@@ -62,7 +64,8 @@ export function onAuthChange (user) {
         const settings = await fetchSettings(uid)
         await Promise.all([
           dispatch(addSettingsTimerDuration(settings.timerDuration)),
-          dispatch(addSettingsRestDuration(settings.restDuration))
+          dispatch(addSettingsRestDuration(settings.restDuration)),
+          dispatch(fetchAndHandleScore(uid))
         ])
         dispatch(isAuthed(uid))
       }
