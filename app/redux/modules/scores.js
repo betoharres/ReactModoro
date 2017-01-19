@@ -1,13 +1,32 @@
 import { ref } from '~/config/constants'
-import { fetchScore } from '~/api/scores'
+import { fetchScore, increaseScore, decreaseScore } from '~/api/scores'
 import { addUser, addMultipleUsers } from '~/redux/modules/users'
 import { fetchUser } from '~/api/users'
+import { showFlashNotification } from '~/redux/modules/flashNotification'
 
 const FETCHING_SCORE = 'FETCHING_SCORE'
 const FETCHING_SCORE_SUCCESS = 'FETCHING_SCORE_SUCCESS'
 const UPDATE_LEADERBOARD = 'UPDATE_LEADERBOARD'
 const ADD_LISTENER = 'ADD_LISTENER'
 const ADD_SCORES = 'ADD_SCORES'
+const INCREMENT_SCORE = 'INCREMENT_SCORE'
+const DECREMENT_SCORE = 'DECREMENT_SCORE'
+
+export function incrementScore (uid, amount) {
+  return {
+    type: INCREMENT_SCORE,
+    uid,
+    amount,
+  }
+}
+
+export function decrementScore (uid, amount) {
+  return {
+    type: DECREMENT_SCORE,
+    uid,
+    amount,
+  }
+}
 
 export function updateLeaderboard (uids) {
   return {
@@ -56,6 +75,16 @@ function usersScores (state = {}, action) {
         ...state,
         ...action.scores,
       }
+    case INCREMENT_SCORE :
+      return {
+        ...state,
+        [action.uid]: state[action.uid] + action.amount
+      }
+    case DECREMENT_SCORE :
+      return {
+        ...state,
+        [action.uid]: state[action.uid] - action.amount
+      }
     default :
       return state
   }
@@ -76,6 +105,32 @@ export function fetchAndHandleScore (uid) {
     } else {
       const user = await fetchUser(uid)
       return dispatch(addUser(uid, user))
+    }
+  }
+}
+
+export function incrementAndHandleScore (amount) {
+  return async function (dispatch, getState) {
+    const { authedId } = getState().authentication
+    dispatch(incrementScore(authedId, amount))
+    try {
+      increaseScore(authedId, amount)
+    } catch (e) {
+      dispatch(decrementScore(authedId, amount))
+      dispatch(showFlashNotification({text: 'Error updating your state'}))
+    }
+  }
+}
+
+export function decrementAndHandleScore (amount) {
+  return async function (dispatch, getState) {
+    const { authedId } = getState().authentication
+    dispatch(decrementScore(authedId, amount))
+    try {
+      decreaseScore(authedId, amount)
+    } catch (e) {
+      dispatch(incrementScore(authedId, amount))
+      dispatch(showFlashNotification({text: 'Error updating your state'}))
     }
   }
 }
@@ -140,6 +195,8 @@ export default function scores (state = initialState, action) {
         leaderboardUids: action.uids,
       }
     case ADD_SCORES :
+    case INCREMENT_SCORE :
+    case DECREMENT_SCORE :
       return {
         ...state,
         usersScores: usersScores(state.usersScores, action)

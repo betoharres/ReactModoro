@@ -1,7 +1,10 @@
 import React, {Component, PropTypes} from 'react'
+import { ListView } from 'react-native'
 import { Leaderboard } from '~/components'
 import { connect } from 'react-redux'
 import { fetchAndSetScoresListener } from '~/redux/modules/scores'
+
+import Leader from './Leader'
 
 class LeaderboardContainer extends Component {
 
@@ -13,6 +16,16 @@ class LeaderboardContainer extends Component {
     openDrawer: PropTypes.func,
   }
 
+  constructor (props) {
+    super(props)
+    this.ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2
+    })
+    this.state = {
+      dataSource: this.ds.cloneWithRows(this.props.leaders)
+    }
+  }
+
   componentDidMount () {
     if (this.props.listenerSet === false) {
       this.props.dispatch(fetchAndSetScoresListener())
@@ -21,13 +34,25 @@ class LeaderboardContainer extends Component {
 
   componentWillReceiveProps (nextProps) {
     if (nextProps.leaders !== this.props.leaders) {
+      this.setState({
+        dataSource: this.ds.cloneWithRows(nextProps.leaders)
+      })
       console.log('New leaders: ', nextProps.leaders)
     }
   }
 
+  renderRow = ({displayName, photoURL, score}) => {
+    return <Leader name={displayName} avatar={photoURL} score={score} />
+  }
+
   render () {
     return (
-      <Leaderboard openDrawer={this.props.openDrawer} />
+      <Leaderboard
+        dataSource={this.state.dataSource}
+        renderRow={this.renderRow}
+        leaders={this.props.leaders}
+        listenerSet={this.props.listenerSet}
+        openDrawer={this.props.openDrawer} />
     )
   }
 }

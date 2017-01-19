@@ -1,4 +1,4 @@
-package com.reactmodoro;
+package com.betoharres.reactmodoro;
 
 import android.app.Application;
 import android.util.Log;

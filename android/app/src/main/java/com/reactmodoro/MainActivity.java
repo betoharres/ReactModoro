@@ -1,4 +1,4 @@
-package com.reactmodoro;
+package com.betoharres.reactmodoro;
 
 import com.facebook.react.ReactActivity;
 import android.content.Intent;
