@@ -37,7 +37,6 @@ class LeaderboardContainer extends Component {
       this.setState({
         dataSource: this.ds.cloneWithRows(nextProps.leaders)
       })
-      console.log('New leaders: ', nextProps.leaders)
     }
   }
 

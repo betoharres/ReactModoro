@@ -27,7 +27,7 @@ export default function ReactModoroNavbar (props) {
       {...optionalAttrs}
       style={Platform.OS === 'android' ? {marginTop: 8, marginBottom: 8} : null}
       tintColor={colors.tabPrimary}
-      title={{title: 'Hello!'}} />
+      title={{title: props.title}} />
   )
 
 }

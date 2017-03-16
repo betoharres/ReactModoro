@@ -13,7 +13,6 @@ export default function Drawer (props) {
 
   return (
     <View style={styles.container}>
-      <DrawerHeader />
       <DrawerTab
         title='Home'
         selected={props.activeFooterTab === 'home'}
